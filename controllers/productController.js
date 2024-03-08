@@ -4,18 +4,14 @@ const create_product = async (req, res) => {
   try {
     // const { companyId } = req.params;
 
-    const { sections } = req.body;
+    const { sections1 } = req.body;
 
     // console.log(productDetails);
     // console.log(productImage);
-    const newProudct = await Product.create({ sections });
+    const newProudct = await Product.create({ sections1: sections1 });
 
     // const newItem = await newProudct.save();
-    res.status(201).json({
-      message: "Product is created",
-      data: newProudct._id,
-      // newProudct,
-    });
+    res.status(201).json(newProudct._id);
   } catch (error) {
     console.error("Error saving product details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -25,22 +21,78 @@ const create_product = async (req, res) => {
 const update_sections = async (req, res) => {
   try {
     const productId = req.params.Id;
-    const sectionData = req.body;
-    const status = req.body.status;
-    const findItem = await Product.findById({ _id: productId });
+    const { section2, status } = req.body;
+    // Find the product by ID
+    const findItem = await Product.findById(productId);
     if (!findItem) {
       return res.status(400).json({
         message: "Unable to find product",
       });
     }
+    // Update section2 if provided
+    if (section2) {
+      findItem.sections2 = section2;
+    }
+    // Update status if provided
     if (status) {
       findItem.status = status;
     }
-    findItem.sections = sectionData;
+    // Save the updated product
     await findItem.save();
     res.json(findItem);
   } catch (error) {
-    console.error("Error saving product details:", error.message);
+    console.error("Error updating product details:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const update_sections3 = async (req, res) => {
+  try {
+    const productId = req.params.Id;
+    const { sections3, status } = req.body;
+    const findItem = await Product.findById(productId);
+    if (!findItem) {
+      return res.status(400).json({
+        message: "Unable to find product",
+      });
+    }
+    if (sections3) {
+      findItem.sections3 = sections3;
+    }
+    if (status) {
+      findItem.status = status;
+    }
+    await findItem.save();
+    res.json(findItem);
+  } catch (error) {
+    console.error("Error updating product details:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+const update_sections4 = async (req, res) => {
+  try {
+    const productId = req.params.Id;
+    const { sections4, status } = req.body;
+    // Find the product by ID
+    const findItem = await Product.findById(productId);
+    if (!findItem) {
+      return res.status(400).json({
+        message: "Unable to find product",
+      });
+    }
+    // Update section2 if provided
+    if (sections4) {
+      findItem.sections4 = sections4;
+    }
+    // Update status if provided
+    if (status) {
+      findItem.status = status;
+    }
+    // Save the updated product
+    await findItem.save();
+    res.json(findItem);
+  } catch (error) {
+    console.error("Error updating product details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -78,7 +130,6 @@ const getProductById = async (req, res) => {
     const productId = req.params.id;
     // console.log(productId);
     const fetchData = await Product.findById({ _id: productId });
-    // console.log(fetchData);
     res.status(200).json(fetchData);
   } catch (error) {
     console.error("Error saving product details:", error.message);
@@ -91,6 +142,7 @@ const getProductById = async (req, res) => {
 const updateproductStatus = async (req, res) => {
   try {
     const productId = req.params.productId;
+    console.log(productId);
     const status = req.body.status;
 
     const fetchData = await Product.findById({ _id: productId });
@@ -114,4 +166,6 @@ module.exports = {
   getAllProductByCompany,
   getProductById,
   updateproductStatus,
+  update_sections3,
+  update_sections4
 };
