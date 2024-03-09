@@ -101,6 +101,9 @@ const update_sections4 = async (req, res) => {
 const getAllProducts = async (req, res) => {
   try {
     const collectData = await Product.find({});
+    if (collectData.length === 0) {
+      return res.status(404).json({ message: "No active products found" });
+    }
     res.status(201).json(collectData);
   } catch (error) {
     console.error("Error saving product details:", error.message);
@@ -167,5 +170,5 @@ module.exports = {
   getProductById,
   updateproductStatus,
   update_sections3,
-  update_sections4
+  update_sections4,
 };
