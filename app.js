@@ -33,6 +33,6 @@ app.use("/api/category", categoryRoute);
 app.use("/api/product", productRoute);
 app.use("/api/opportunity", oppurtunityRoute);
 
-app.listen(5000, () => {
+app.listen(3000, () => {
   console.log("Server is started");
 });

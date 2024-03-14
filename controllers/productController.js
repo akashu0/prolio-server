@@ -100,6 +100,7 @@ const update_sections4 = async (req, res) => {
 // GET ALL PRODUCTS FROM DATABASE
 const getAllProducts = async (req, res) => {
   try {
+   
     const collectData = await Product.find({});
     if (collectData.length === 0) {
       return res.status(404).json({ message: "No active products found" });
