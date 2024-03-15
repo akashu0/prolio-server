@@ -30,8 +30,9 @@ const companyController = require("../controllers/companyController");
 
 company_route.post(
   "/createNewCompany",
-  // upload.array("documents"),
+  upload.array("documents"),
   companyController.registerNewCompany
 );
+
 
 module.exports = company_route;

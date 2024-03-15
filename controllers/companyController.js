@@ -1,9 +1,15 @@
 const CompanyModel = require("../model/companyDetailsModel");
+const User = require("../model/userModel");
 
 const registerNewCompany = async (req, res) => {
   try {
-    const { formData, contactData, documentData } = req.body;
-    console.log();
+    const { formData, contactData, documentData, userId } = req.body;
+    
+
+    const changeStatus = await User.findById(userId);
+    if (!changeStatus) {
+      return res.status(400).json({ message: "User is not found" });
+    }
 
     const newCompanyDetails = new CompanyModel({
       companyName: formData.companyName,
@@ -20,13 +26,19 @@ const registerNewCompany = async (req, res) => {
       state: contactData.state,
       city: contactData.city,
       pincode: contactData.pincode,
-      documents: documentData.map((item) => item.base64), // Assuming documentData contains base64 strings
+      documents: documentData.map((item) => item.base64),
+      userId: userId,
     });
+
     await newCompanyDetails.save();
-    res.status(201).json({ message: "Register Successfully" });
+
+    changeStatus.role = "admin";
+    await changeStatus.save();
+
+    return res.status(201).json({ message: "Registered successfully" ,role: changeStatus.role});
   } catch (error) {
     console.error("Error saving company details:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

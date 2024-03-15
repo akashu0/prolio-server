@@ -40,26 +40,26 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Inavlid email & password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
+
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return res.status(400).json({ message: "Inavlid email & password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
-    //if passwordmatch can generate jwt token
 
     const payload = {
       userId: user.id,
       role: user.role,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_Key, { expiresIn: "1d" });
+    const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: "1d" });
 
-    res.status(201).json(token);
+    res.status(200).json({ token, role: user.role, id: user._id });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error logging in:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

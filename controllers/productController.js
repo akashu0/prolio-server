@@ -102,9 +102,9 @@ const getAllProducts = async (req, res) => {
   try {
    
     const collectData = await Product.find({});
-    if (collectData.length === 0) {
-      return res.status(404).json({ message: "No active products found" });
-    }
+    // if (collectData.length === 0) {
+    //   return res.status(404).json({ message: "No active products found" });
+    // }
     res.status(201).json(collectData);
   } catch (error) {
     console.error("Error saving product details:", error.message);
@@ -132,7 +132,6 @@ const getAllProductByCompany = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const productId = req.params.id;
-    // console.log(productId);
     const fetchData = await Product.findById({ _id: productId });
     res.status(200).json(fetchData);
   } catch (error) {

@@ -67,6 +67,15 @@ const companyDetialsSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  status: {
+    type: String,
+    default: "Active",
+  },
 });
 
 const companyDetials = mongoose.model("companyDetials", companyDetialsSchema);
