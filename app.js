@@ -10,6 +10,9 @@ const companyRoute = require("./routes/companyRoute");
 const categoryRoute = require("./routes/categoryRoutes");
 const productRoute = require("./routes/productRoute");
 const oppurtunityRoute = require("./routes/opportunityRoute");
+const enquiryRoute = require("./routes/enquiryRoute")
+
+
 
 dotenv.config();
 const app = express();
@@ -32,6 +35,7 @@ app.use("/api/superAdmin", superAdminRoute);
 app.use("/api/category", categoryRoute);
 app.use("/api/product", productRoute);
 app.use("/api/opportunity", oppurtunityRoute);
+app.use("/api/enquiry", enquiryRoute)
 
 app.listen(3000, () => {
   console.log("Server is started");

@@ -18,8 +18,21 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: "draft",
   },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "companyDetials",
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "companyDetials",
+    required: true,
+  },
 });
 
 const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;
+
+
+
