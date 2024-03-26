@@ -1,42 +1,42 @@
 const User = require("../model/userModel");
+const Opportunity = require("../model/opportunityModel");
 
-const createOppor = async (req, res) => {
+const createOpportunity = async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const bodydata = req.body;
+    const { userId } = req.user;
+    const { productId, companyId, formData } = req.body;
 
-    const findUser = await User.findById({ _id: userId });
+    const feedData = new Opportunity({
+      productId: productId,
+      userId: userId,
+      companyId: companyId,
+      formData: formData,
+    });
 
-    if (findUser) {
-      findUser.oppurtunities = bodydata;
-      await findUser.save();
-      return res
-        .status(201)
-        .json({ message: "Successfully applied oppurtunities" });
-    }
-
-    res.status(400).json({ message: "Error counter" });
+    await feedData.save();
+    res.status(200).json({ message: "form submitted" });
   } catch (error) {
-    console.error("Error saving product details:", error.message);
+    console.error("Error saving form details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-const getAllOpper = async(req,res) => {
-   try {
-    const companyId = req.params.companyId
+const getByUserOpportunity = async (req, res) => {
+  try {
+    const { userId, role } = req.user;
 
-    const fetchData = await User.find({"oppurtunities.companyId": companyId  })
+    const opportunityData = await Opportunity.find({ userId: userId })
+      .populate("productId")
+      .populate("userId");
 
-    
-   } catch (error) {
-    console.error("Error saving product details:", error.message);
+    res.status(200).json(opportunityData);
+  } catch (error) {
+    console.error("Error Opportunity :", error.message);
     res.status(500).json({ error: "Internal Server Error" });
-   }
-   
-
-}
+  }
+};
 
 module.exports = {
-  createOppor,
+  createOpportunity,
+  getByUserOpportunity,
 };

@@ -23,4 +23,12 @@ user_route.delete(
   userContoller.removeFromWishlist
 );
 
+user_route.get(
+  "/get-userDetails",
+  authMiddleware.verifyToken,
+  userContoller.fetchUserDetails
+);
+
+user_route.put("/update-userDetails", authMiddleware.verifyToken, userContoller.updateUserDetails)
+
 module.exports = user_route;

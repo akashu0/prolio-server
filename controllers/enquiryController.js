@@ -4,7 +4,7 @@ const Company = require("../model/companyDetailsModel");
 
 const CreateEnquiry = async (req, res) => {
   try {
-    console.log("Welcome................................");
+
     const { userId, role } = req.user;
 
     const { productId, text, companyId } = req.body;

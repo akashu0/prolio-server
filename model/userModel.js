@@ -29,24 +29,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
-  wishlist: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-      },
-    },
-  ],
-
-  oppurtunities: [
-    
-    {
-      type: mongoose.Schema.Types.Mixed,
-      default: [],
-    },
-  ],
+  userImg: {
+    type: String,
+  },
+  contactNumber: {
+    type: String,
+  },
 });
 
 const User = mongoose.model("User", userSchema);
