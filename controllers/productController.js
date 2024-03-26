@@ -176,6 +176,19 @@ const updateproductStatus = async (req, res) => {
   }
 };
 
+const getProductByUserId = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const fetchData = await Product.find({ userId: userId });
+
+    res.status(200).json(fetchData);
+  } catch (error) {
+    console.error("Error fetching product details:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 module.exports = {
   create_product,
   update_sections,
@@ -185,4 +198,5 @@ module.exports = {
   updateproductStatus,
   update_sections3,
   update_sections4,
+  getProductByUserId
 };

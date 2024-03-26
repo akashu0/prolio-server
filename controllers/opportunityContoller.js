@@ -36,6 +36,19 @@ const getByUserOpportunity = async (req, res) => {
   }
 };
 
+const getOpportunityById = async(req,res) =>{
+
+  try {
+
+    const fectData = await Opportunity.findOne({})
+    
+  } catch (error) {
+    console.error("Error Opportunity :", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+
+}
+
 module.exports = {
   createOpportunity,
   getByUserOpportunity,

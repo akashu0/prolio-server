@@ -24,6 +24,10 @@ product_route.get(
   productController.getProductById
 );
 
+product_route.get(
+  "/getproductbyUser", authMiddleware.verifyToken,productController.getProductByUserId
+)
+
 product_route.put(
   "/changeStatus/:productId",
   productController.updateproductStatus
