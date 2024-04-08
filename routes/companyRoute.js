@@ -26,6 +26,8 @@ const upload = multer({
   //   limits: { fileSize: 2 * 1024 * 1024 }, // Maximum file size: 2MB
 });
 
+const authController = require("../middlewares/jwtAuth");
+
 const companyController = require("../controllers/companyController");
 
 company_route.post(
@@ -34,5 +36,20 @@ company_route.post(
   companyController.registerNewCompany
 );
 
+company_route.get(
+  "/get-all-company",
+  // authController.verifyToken,
+  companyController.getAllCompanyList
+);
+
+company_route.put(
+  "/verified-company/:companyId",
+  companyController.verifiedCompany
+);
+
+company_route.put(
+  "/rejected-company/:companyId",
+  companyController.rejectedCompany
+);
 
 module.exports = company_route;

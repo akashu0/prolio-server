@@ -1,47 +1,56 @@
 const Category = require("../model/category");
+const TypeCategory = require("../model/typeCategoryModel");
 
 const create_Category = async (req, res) => {
   try {
-    let { product_type, category } = req.body;
-    product_type = product_type.toLowerCase();
-    const existingCategory = await Category.findOne({ product_type });
+    let { typeName, category, subcategories, questions } = req.body;
+    typeName = typeName.toLowerCase();
 
-    if (existingCategory) {
-      const categoryExists = category.some((newCategory) =>
-        existingCategory.category.find(
-          (cat) => cat.categoryName === newCategory.categoryName
-        )
-      );
+    let existingType = await TypeCategory.findOne({ type: typeName });
 
-      if (categoryExists) {
-        return res.status(400).json({ error: " categories already exist" });
+    if (existingType) {
+      if (existingType.category === category) {
+        console.log(existingType.category);
+        const newSubcategories = subcategories.filter(
+          (subcategory) => !existingType.subcategories.includes(subcategory)
+        );
+
+        if (newSubcategories.length === 0) {
+          return res
+            .status(400)
+            .json({ message: "Subcategories already exist" });
+        } else {
+          existingType.subcategories.push(...newSubcategories);
+          existingType.questions = questions;
+          existingType = await existingType.save();
+          return res.status(200).json({
+            message: "Subcategories added successfully",
+          });
+        }
       } else {
-        existingCategory.category.push(...category);
-        const updatedCategory = await existingCategory.save();
-        return res.status(200).json({
-          message: "Category details added successfully",
-          updatedCategory,
-        });
+        return res.status(400).json({ message: "Category Already Exists" });
       }
     } else {
-      const newCategory = new Category({
-        product_type,
+      const newTypeCategory = new TypeCategory({
+        type: typeName,
         category,
+        subcategories,
+        questions,
       });
-      await newCategory.save();
-      return res
-        .status(200)
-        .json({ message: "Category created successfully", newCategory });
+      await newTypeCategory.save();
+      return res.status(200).json({
+        message: "New type and category created successfully",
+      });
     }
   } catch (error) {
-    console.log(error.message);
-    res.status(400).json({ error: "Error creating category" });
+    console.error(error.message);
+    res.status(400).json({ message: "Error creating category" });
   }
 };
 
 const getAllCategory = async (req, res) => {
   try {
-    const getAllData = await Category.find();
+    const getAllData = await TypeCategory.find();
 
     res.status(201).json(getAllData);
   } catch (error) {
@@ -59,6 +68,81 @@ const getCategoryType = async (req, res) => {
   } catch (error) {
     console.log(error.message);
     res.status(400).json({ error: "error " });
+  }
+};
+
+const blockOrUnblockCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // console.log(id);
+    const getData = await TypeCategory.findById(id);
+    if (!getData) {
+      return res
+        .status(400)
+        .json({ message: "Category not found in database" });
+    }
+
+    if (getData.status === "Active") {
+      getData.status = "Inactive";
+      await getData.save();
+      return res.status(200).json({
+        message: "The Category has been successfully set to Inactive",
+      });
+    } else {
+      getData.status = "Active";
+      await getData.save();
+      return res
+        .status(200)
+        .json({ message: "The Category has been successfully set to Active" });
+    }
+  } catch (error) {
+    console.error(error.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while updating category status" });
+  }
+};
+
+const updateCategoryById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category, subcategories, questions } = req.body;
+
+    // Update the category in the database
+    const updatedCategory = await TypeCategory.findByIdAndUpdate(id, {
+      category,
+      subcategories,
+      questions,
+    });
+
+    // Check if the category was found and updated
+    if (!updatedCategory) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    // Respond with a success message
+    res.status(200).json({ message: "Category updated successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res
+      .status(500)
+      .json({ message: "Error occurred while updating category " });
+  }
+};
+
+const getCategoryById = async (req, res) => {
+  try {
+    // console.log("entr.......");
+    const { id } = req.params;
+    const getData = await TypeCategory.findById(id);
+
+    if (!getData) {
+      return res.status(400).json({ message: "Error Fetching Category Data" });
+    }
+
+    res.status(200).json(getData);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Error occurred while geting category " });
   }
 };
 
@@ -170,4 +254,7 @@ module.exports = {
   getCategoryName,
   getSubCategoryName,
   getFields,
+  blockOrUnblockCategory,
+  updateCategoryById,
+  getCategoryById,
 };

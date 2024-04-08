@@ -16,4 +16,10 @@ oppor_route.get(
   opportunityController.getByUserOpportunity
 );
 
+oppor_route.get(
+  "/get-opportunity/:id",
+  // authMiddleware.verifyToken,
+  opportunityController.getOpportunityById
+);
+
 module.exports = oppor_route;

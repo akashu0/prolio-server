@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema({
   sections4: {
     type: mongoose.Schema.Types.Mixed,
   },
-  
+
   status: {
     type: String,
     default: "draft",
@@ -28,11 +28,10 @@ const productSchema = new mongoose.Schema({
     ref: "companyDetials",
     required: true,
   },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;
-
-
-

@@ -73,7 +73,12 @@ const companyDetialsSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "Active",
+    default: "pending",
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  rejectedReason: {
+    type: String,
   },
 });
 

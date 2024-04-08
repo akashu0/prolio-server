@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema({
+const typecategorySchema = new mongoose.Schema({
   type: {
     type: String,
-    required: true,
-    unique: true, 
+  },
+  status: {
+    type: String,
+    default: "Active",
   },
   category: {
     type: String,
-    required: true,
   },
+
   subcategories: [
     {
       type: String,
@@ -21,6 +23,6 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-const Category = mongoose.model("Category", categorySchema);
+const TypeCategory = mongoose.model("TypeCategory", typecategorySchema);
 
-module.exports = Category;
+module.exports = TypeCategory;

@@ -36,20 +36,29 @@ const getByUserOpportunity = async (req, res) => {
   }
 };
 
-const getOpportunityById = async(req,res) =>{
-
+const getOpportunityById = async (req, res) => {
   try {
+    const { id } = req.params;
 
-    const fectData = await Opportunity.findOne({})
-    
+    const fetchData = await Opportunity.findById(id)
+      .populate("productId")
+      .populate("companyId");
+
+    if (!fetchData) {
+      return res
+        .status(400)
+        .json({ message: "The Opportunity Data is not Available " });
+    }
+
+    res.status(200).json(fetchData);
   } catch (error) {
     console.error("Error Opportunity :", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
-
-}
+};
 
 module.exports = {
   createOpportunity,
   getByUserOpportunity,
+  getOpportunityById,
 };
