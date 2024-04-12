@@ -5,30 +5,30 @@ const create_Category = async (req, res) => {
   try {
     let { typeName, category, subcategories, questions } = req.body;
     typeName = typeName.toLowerCase();
+    typeName = typeName.toLowerCase().trim(); // Trim and convert to lowercase
+    category = category.trim(); // Trim category
 
-    let existingType = await TypeCategory.findOne({ type: typeName });
+    // Trim each subcategory
+    subcategories = subcategories.map((subcategory) => subcategory.trim());
 
-    if (existingType) {
-      if (existingType.category === category) {
-        console.log(existingType.category);
-        const newSubcategories = subcategories.filter(
-          (subcategory) => !existingType.subcategories.includes(subcategory)
-        );
+    let existingTypes = await TypeCategory.find({ type: typeName });
 
-        if (newSubcategories.length === 0) {
-          return res
-            .status(400)
-            .json({ message: "Subcategories already exist" });
-        } else {
-          existingType.subcategories.push(...newSubcategories);
-          existingType.questions = questions;
-          existingType = await existingType.save();
-          return res.status(200).json({
-            message: "Subcategories added successfully",
-          });
-        }
+    if (existingTypes.length > 0) {
+      const categoryExists = existingTypes.some((existingType) =>
+        existingType.category.includes(category)
+      );
+
+      if (categoryExists) {
+        return res.status(400).json({ message: "Category already exists" });
       } else {
-        return res.status(400).json({ message: "Category Already Exists" });
+        const newTypeCategory = new TypeCategory({
+          type: typeName,
+          category,
+          subcategories,
+          questions,
+        });
+        await newTypeCategory.save();
+        return res.status(200).json({ message: "Category added successfully" });
       }
     } else {
       const newTypeCategory = new TypeCategory({
@@ -38,9 +38,9 @@ const create_Category = async (req, res) => {
         questions,
       });
       await newTypeCategory.save();
-      return res.status(200).json({
-        message: "New type and category created successfully",
-      });
+      return res
+        .status(200)
+        .json({ message: "New type category created successfully" });
     }
   } catch (error) {
     console.error(error.message);
@@ -61,13 +61,18 @@ const getAllCategory = async (req, res) => {
 
 const getCategoryType = async (req, res) => {
   try {
-    const getData = await Category.find().select("_id product_type ");
+    const uniqueTypes = await TypeCategory.aggregate([
+      {
+        $group: {
+          _id: "$type", // Group by the 'type' field
+        },
+      },
+    ]);
 
-    // console.log(getData);
-    res.status(201).json(getData);
+    res.status(201).json(uniqueTypes);
   } catch (error) {
     console.log(error.message);
-    res.status(400).json({ error: "error " });
+    res.status(400).json({ error: "error" });
   }
 };
 
@@ -152,16 +157,16 @@ const getCategoryName = async (req, res) => {
     // console.log(productType);
 
     // MongoDB aggregation pipeline to match the document based on the product_type
-    const categoryName = await Category.aggregate([
+    const categoryName = await TypeCategory.aggregate([
       {
         $match: {
-          product_type: productType, // Match the product_type
+          type: productType, // Match the product_type
         },
       },
       {
         $project: {
           _id: 0, // Exclude _id field
-          categoryNames: "$category.categoryName", // Project only the category names
+          category: "$category", // Project only the category names
         },
       },
     ]);
@@ -178,39 +183,42 @@ const getSubCategoryName = async (req, res) => {
   try {
     const { productTypes, categoryName } = req.params;
 
-    // MongoDB aggregation pipeline to match the document based on the product_type and categoryName
-    const categories = await Category.aggregate([
+    const aggregationPipeline = [
       {
+        // Match documents based on type and category
         $match: {
-          product_type: productTypes, // Match the product_type
+          type: productTypes,
+          category: categoryName,
         },
       },
       {
-        $unwind: "$category", // Unwind the category array
-      },
-      {
-        $match: {
-          "category.categoryName": categoryName, // Match documents where categoryName matches
+        // Project the subcategories and questions from the matched documents
+        $project: {
+          subCategoryNames: "$subcategories",
+          questions: "$questions",
         },
       },
-      {
-        $group: {
-          _id: null,
-          subCategoryNames: { $addToSet: "$category.subcategoryName" }, // Add subcategoryName to an array
-        },
-      },
-    ]);
+    ];
 
-    // Extract the subcategoryName array from the result
-    const subCategoryNames = categories[0].subCategoryNames.flat();
-    // console.log(categories);
+    const result = await TypeCategory.aggregate(aggregationPipeline);
 
-    res.status(200).json({ subCategoryNames });
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: "No data found for the given product type and category",
+      });
+    }
+
+    // console.log(result[0]);
+    res.status(200).json(result[0]);
   } catch (error) {
-    console.log(error.message);
-    res.status(400).json({ error: "error " });
+    // Handle errors and return a response
+    console.error(error.message);
+    res
+      .status(400)
+      .json({ error: "An error occurred while fetching the data" });
   }
 };
+
 const getFields = async (req, res) => {
   try {
     const { productTypes, categoryName } = req.params;

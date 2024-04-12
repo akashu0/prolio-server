@@ -159,7 +159,7 @@ const getProductById = async (req, res) => {
 const updateproductStatus = async (req, res) => {
   try {
     const productId = req.params.productId;
-    console.log(productId);
+    // console.log(productId);
     const status = req.body.status;
 
     const fetchData = await Product.findById({ _id: productId });
