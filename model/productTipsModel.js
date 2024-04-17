@@ -19,7 +19,7 @@ const tipsSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "process",
+    default: "processing",
   },
 });
 

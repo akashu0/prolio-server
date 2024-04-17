@@ -15,6 +15,9 @@ superAdmin_route.post(
   superAdminContoller.createProductTips
 );
 
+superAdmin_route.get("/get-alltips", superAdminContoller.getAllTips);
+superAdmin_route.put("/updateStatus/:id", superAdminContoller.changeStatus);
+
 // superAdmin_route.post("/createProduct", categoryContoller.createItem);
 
 module.exports = superAdmin_route;
