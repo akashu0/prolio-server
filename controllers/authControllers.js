@@ -51,6 +51,13 @@ const login = async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+    const userDetails = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      userImg: user.userImg,
+    };
+
     const payload = {
       userId: user.id,
       role: user.role,
@@ -58,7 +65,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: "1d" });
 
-    res.status(200).json({ token, role: user.role, id: user._id });
+    res.status(200).json({ token, role: user.role, id: user._id ,userDetails});
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Internal Server Error" });

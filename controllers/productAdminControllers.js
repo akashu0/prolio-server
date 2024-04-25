@@ -107,7 +107,9 @@ const publishedFaqs = async (req, res) => {
     if (!getData || getData.length === 0) {
       return res
         .status(201)
-        .json({ message: "Empty published FAQs found for the specified product" });
+        .json({
+          message: "Empty published FAQs found for the specified product",
+        });
     }
 
     res.status(200).json(getData);
@@ -121,10 +123,7 @@ const publishedFaqs = async (req, res) => {
 
 const getProductByCategory = async (req, res) => {
   try {
-    const { selectedProductType, selectedCategoryName } = req.params
-
-    console.log(selectedProductType,"typeeeeeee");
-    console.log(selectedCategoryName,"category");
+    const { selectedProductType, selectedCategoryName } = req.params;
 
     if (!selectedCategoryName || !selectedProductType) {
       return res.status(400).json({ message: "No category or type provided" });
@@ -136,9 +135,8 @@ const getProductByCategory = async (req, res) => {
       userId: userId,
       category: selectedCategoryName,
       type: selectedProductType,
-      status: "approved"  
+      status: "approved",
     });
-
 
     const transformedData = collectData.map((product) => {
       const productDetailsStep = product.questions?.steps?.find(
@@ -159,11 +157,16 @@ const getProductByCategory = async (req, res) => {
         (q) => q.description === "Product Image"
       );
 
-      let primaryImage = "", secondaryImage = "";
+      let primaryImage = "",
+        secondaryImage = "";
       if (productImageQuestion && productImageQuestion.images.length > 0) {
-        primaryImage = productImageQuestion.images[0].base64 || productImageQuestion.images[0].url;
+        primaryImage =
+          productImageQuestion.images[0].base64 ||
+          productImageQuestion.images[0].url;
         if (productImageQuestion.images.length > 1) {
-          secondaryImage = productImageQuestion.images[1].base64 || productImageQuestion.images[1].url;
+          secondaryImage =
+            productImageQuestion.images[1].base64 ||
+            productImageQuestion.images[1].url;
         }
       }
 
@@ -184,13 +187,11 @@ const getProductByCategory = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   createFaqs,
   updateFaqs,
   getFaqsByCompany,
   updateStatus,
   publishedFaqs,
-  getProductByCategory
+  getProductByCategory,
 };
