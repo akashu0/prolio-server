@@ -8,11 +8,15 @@ product_route.get("/getall-product", productController.getAllProducts);
 product_route.post(
   "/create-product",
   authMiddleware.verifyToken,
-  productController.create_product
+  productController.createProducts
 );
-product_route.put("/update-sections/:Id", productController.update_sections);
-product_route.put("/update-sections3/:Id", productController.update_sections3);
-product_route.put("/update-sections4/:Id", productController.update_sections4);
+
+product_route.put(
+  "/update-product/:id",
+  authMiddleware.verifyToken,
+  productController.updateProduct
+);
+
 product_route.get(
   "/getAllProductByCompany/:companyId",
   productController.getAllProductByCompany
@@ -25,11 +29,14 @@ product_route.get(
 );
 
 product_route.get(
-  "/getproductbyUser", authMiddleware.verifyToken,productController.getProductByUserId
-)
+  "/getproductbyUser",
+  authMiddleware.verifyToken,
+  productController.getProductByUserId
+);
 
 product_route.put(
-  "/changeStatus/:productId",
+  "/changeStatus/:id",
+  authMiddleware.verifyToken,
   productController.updateproductStatus
 );
 

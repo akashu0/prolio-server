@@ -13,6 +13,7 @@ const productRoute = require("./routes/productRoute");
 const oppurtunityRoute = require("./routes/opportunityRoute");
 const enquiryRoute = require("./routes/enquiryRoute");
 const typeRoute = require("./routes/typeRoutes");
+const productAdmin = require("./routes/productAdminRoutes")
 
 dotenv.config();
 const app = express();
@@ -41,6 +42,7 @@ app.use("/api/product", productRoute);
 app.use("/api/opportunity", oppurtunityRoute);
 app.use("/api/enquiry", enquiryRoute);
 app.use("/api/type", typeRoute);
+app.use("/api/productAdmin", productAdmin);
 
 app.listen(3000, () => {
   console.log("Express server is running on port 3000");

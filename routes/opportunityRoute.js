@@ -22,4 +22,15 @@ oppor_route.get(
   opportunityController.getOpportunityById
 );
 
+oppor_route.get(
+  "/getReceivedOpportunities",
+  authMiddleware.verifyToken,
+  opportunityController.getReceviedOpportunityByCompany
+);
+oppor_route.put(
+  "/update-status/:id",
+  authMiddleware.verifyToken,
+  opportunityController.updatedStatus
+);
+
 module.exports = oppor_route;

@@ -2,22 +2,49 @@ const Product = require("../model/productModel");
 const jwt = require("jsonwebtoken");
 const Company = require("../model/companyDetailsModel");
 
-const create_product = async (req, res) => {
+// const create_product = async (req, res) => {
+//   try {
+//     const { userId, role } = req.user;
+
+//     // Check if the user's company exists
+//     const checkExistedCompany = await Company.findOne({ userId: userId });
+//     if (checkExistedCompany) {
+//       const { sections1 } = req.body;
+//       // Create a new product associated with the user's company
+//       const newProduct = await Product.create({
+//         sections1: sections1,
+//         companyId: checkExistedCompany._id,
+//         userId: userId,
+//       });
+//       await newProduct.save();
+//       res.status(201).json(newProduct._id);
+//     } else {
+//       // If the user's company does not exist, return an error
+//       return res.status(401).json({ message: "Company Not Registered" });
+//     }
+//   } catch (error) {
+//     console.error("Error saving product details:", error.message);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+const createProducts = async (req, res) => {
   try {
     const { userId, role } = req.user;
-
-    // Check if the user's company exists
     const checkExistedCompany = await Company.findOne({ userId: userId });
     if (checkExistedCompany) {
-      const { sections1 } = req.body;
-      // Create a new product associated with the user's company
+      const { type, category, subcategories, questions } = req.body.formData;
+
       const newProduct = await Product.create({
-        sections1: sections1,
+        type: type,
+        category: category,
+        subcategories: subcategories,
+        questions: questions,
         companyId: checkExistedCompany._id,
-        userId: userId
+        userId: userId,
       });
       await newProduct.save();
-      res.status(201).json(newProduct._id);
+      res.status(201).json({ message: "Product Added Successfully" });
     } else {
       // If the user's company does not exist, return an error
       return res.status(401).json({ message: "Company Not Registered" });
@@ -28,80 +55,38 @@ const create_product = async (req, res) => {
   }
 };
 
-// updating the steps deatils from addproduct page
-const update_sections = async (req, res) => {
+const updateProduct = async (req, res) => {
   try {
-    const productId = req.params.Id;
-    const { section2, status } = req.body;
-    // Find the product by ID
-    const findItem = await Product.findById(productId);
-    if (!findItem) {
-      return res.status(400).json({
-        message: "Unable to find product",
-      });
-    }
-    // Update section2 if provided
-    if (section2) {
-      findItem.sections2 = section2;
-    }
-    // Update status if provided
-    if (status) {
-      findItem.status = status;
-    }
-    // Save the updated product
-    await findItem.save();
-    res.json(findItem);
-  } catch (error) {
-    console.error("Error updating product details:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
+    const { id } = req.params; // Product ID from URL
+    const userId = req.user.userId; // User ID from user session
 
-const update_sections3 = async (req, res) => {
-  try {
-    const productId = req.params.Id;
-    const { sections3, status } = req.body;
-    const findItem = await Product.findById(productId);
-    if (!findItem) {
-      return res.status(400).json({
-        message: "Unable to find product",
-      });
+    // Fetch the product to update
+    const product = await Product.findById(id);
+
+    // Check if the product exists and belongs to the user
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
-    if (sections3) {
-      findItem.sections3 = sections3;
+    if (product.userId.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update this product" });
     }
-    if (status) {
-      findItem.status = status;
+
+    // Update the product with new data from req.body
+    const { questions } = req.body.formData;
+
+    if (!questions) {
+      return res.status(400).json({ message: "No Data Available" });
     }
-    await findItem.save();
-    res.json(findItem);
-  } catch (error) {
-    console.error("Error updating product details:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-const update_sections4 = async (req, res) => {
-  try {
-    const productId = req.params.Id;
-    const { sections4, status } = req.body;
-    // Find the product by ID
-    const findItem = await Product.findById(productId);
-    if (!findItem) {
-      return res.status(400).json({
-        message: "Unable to find product",
-      });
-    }
-    // Update section2 if provided
-    if (sections4) {
-      findItem.sections4 = sections4;
-    }
-    // Update status if provided
-    if (status) {
-      findItem.status = status;
-    }
+
+    product.questions = questions;
+
     // Save the updated product
-    await findItem.save();
-    res.json(findItem);
+    await product.save();
+
+    // Return a success response
+    res.status(200).json({ message: "Product updated successfully" });
   } catch (error) {
     console.error("Error updating product details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -112,17 +97,54 @@ const update_sections4 = async (req, res) => {
 const getAllProducts = async (req, res) => {
   try {
     const collectData = await Product.find({});
-    // if (collectData.length === 0) {
-    //   return res.status(404).json({ message: "No active products found" });
-    // }
-    res.status(201).json(collectData);
+
+    const transformedData = collectData.map((product) => {
+      // Find the "Product Details" step
+      const productDetailsStep = product.questions.steps.find(
+        (step) => step.name === "Product Details"
+      );
+
+      // Find specific questions
+      const productNameQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Name"
+      );
+      const brandNameQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Brand Name"
+      );
+      const productImageQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Image"
+      );
+
+      // Extract the images
+      let primaryImage = "",
+        secondaryImage = "";
+      if (productImageQuestion && productImageQuestion.images.length > 0) {
+        primaryImage =
+          productImageQuestion.images[0].base64 ||
+          productImageQuestion.images[0].url;
+        if (productImageQuestion.images.length > 1) {
+          secondaryImage =
+            productImageQuestion.images[1].base64 ||
+            productImageQuestion.images[1].url;
+        }
+      }
+
+      return {
+        id: product._id,
+        productName: productNameQuestion ? productNameQuestion.value : "",
+        brandName: brandNameQuestion ? brandNameQuestion.value : "",
+        productImage: primaryImage,
+        secondaryProductImage: secondaryImage,
+      };
+    });
+
+    // Send the transformed data as the response
+    res.status(200).json(transformedData);
   } catch (error) {
-    console.error("Error saving product details:", error.message);
+    console.error("Error fetching product details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-// GET PRODUCTS RESPCECTIVE COMPANY
 
 const getAllProductByCompany = async (req, res) => {
   try {
@@ -139,17 +161,83 @@ const getAllProductByCompany = async (req, res) => {
 };
 
 // VIEW  PRODUCT BY PRODUCTID
+// const getProductById = async (req, res) => {
+//   try {
+//     const productId = req.params.id;
+
+//     const fetchData = await Product.findById({ _id: productId })
+//       .populate("companyId")
+//       .exec();
+
+//     res.status(200).json(fetchData);
+//   } catch (error) {
+//     console.error("Error saving product details:", error.message);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const getProductById = async (req, res) => {
   try {
     const productId = req.params.id;
 
+    // Fetch product data by its ID and populate the companyId field
     const fetchData = await Product.findById({ _id: productId })
       .populate("companyId")
       .exec();
 
-    res.status(200).json(fetchData);
+    // Check if fetchData exists and has questions
+    if (!fetchData || !fetchData.questions || !fetchData.questions.steps) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Find the "Product Details" step in the questions array
+    const productDetailsStep = fetchData.questions.steps.find(
+      (step) => step.name === "Product Details"
+    );
+
+    // Initialize variables to store image data
+    let productImages = [];
+    let finishedProductImages = [];
+
+    // Check if productDetailsStep and its questions exist
+    if (productDetailsStep && productDetailsStep.questions) {
+      // Extract product images
+      const productImageQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Image"
+      );
+      if (
+        productImageQuestion &&
+        productImageQuestion.images &&
+        productImageQuestion.images.length > 0
+      ) {
+        // Map through the images array and collect base64 or url for each image
+        productImages = productImageQuestion.images.map(
+          (image) => image.base64 || image.url
+        );
+      }
+
+      // Extract finished product images
+      const finishedProductImageQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Provide finished product images"
+      );
+      if (
+        finishedProductImageQuestion &&
+        finishedProductImageQuestion.images &&
+        finishedProductImageQuestion.images.length > 0
+      ) {
+        finishedProductImages = finishedProductImageQuestion.images.map(
+          (image) => image.base64 || image.url
+        );
+      }
+    }
+
+    res.status(200).json({
+      productImages,
+      finishedProductImages,
+      data: fetchData,
+    });
   } catch (error) {
-    console.error("Error saving product details:", error.message);
+    console.error("Error fetching product details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -158,16 +246,17 @@ const getProductById = async (req, res) => {
 
 const updateproductStatus = async (req, res) => {
   try {
-    const productId = req.params.productId;
-    // console.log(productId);
+    const productId = req.params.id;
+  
     const status = req.body.status;
+  
 
     const fetchData = await Product.findById({ _id: productId });
 
     if (fetchData) {
       fetchData.status = status;
       await fetchData.save();
-      return res.status(201).json(fetchData);
+      return res.status(200).json(fetchData.status);
     }
     res.status(400).json({ message: "Can`t find product" });
   } catch (error) {
@@ -179,24 +268,73 @@ const updateproductStatus = async (req, res) => {
 const getProductByUserId = async (req, res) => {
   try {
     const { userId } = req.user;
-    const fetchData = await Product.find({ userId: userId });
 
-    res.status(200).json(fetchData);
+    // Fetch products based on the userId
+    const fetchData = await Product.find({ userId: userId }).populate(
+      "userId",
+      "firstName lastName"
+    );
+
+    // Transform the fetched data to include only the required fields
+    const transformedData = fetchData.map((product) => {
+      // Find the "Product Details" step in the product's questions array
+      const productDetailsStep = product.questions.steps.find(
+        (step) => step.name === "Product Details"
+      );
+
+      // Find the relevant questions
+      const productNameQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Name"
+      );
+      const productIdQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product ID" // Assuming there's a question for Product ID
+      );
+      const brandNameQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Brand Name"
+      );
+      const productImageQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Image"
+      );
+
+      const userName = `${product.userId.firstName} ${product.userId.lastName}`;
+      const localCreatedAt = new Date(product.createdAt).toLocaleString();
+      // Extract the images
+      let primaryImage = "";
+      if (productImageQuestion && productImageQuestion.images.length > 0) {
+        primaryImage =
+          productImageQuestion.images[0].base64 ||
+          productImageQuestion.images[0].url;
+      }
+
+      // Return the transformed data
+      return {
+        id: product._id,
+        productName: productNameQuestion ? productNameQuestion.value : "",
+        productId: productIdQuestion ? productIdQuestion.value : "", // Include the Product ID
+        brandName: brandNameQuestion ? brandNameQuestion.value : "",
+        productImage: primaryImage,
+        status: product.status,
+        createdAt: localCreatedAt,
+        userName: userName, // User's name from populated data
+      };
+    });
+
+    // Send the transformed data as the response
+    res.status(200).json(transformedData);
   } catch (error) {
     console.error("Error fetching product details:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-
 module.exports = {
-  create_product,
-  update_sections,
+  // create_product,
+
   getAllProducts,
   getAllProductByCompany,
   getProductById,
   updateproductStatus,
-  update_sections3,
-  update_sections4,
-  getProductByUserId
+  updateProduct,
+  getProductByUserId,
+  createProducts,
 };

@@ -39,7 +39,6 @@ const updateUserDetails = async (req, res) => {
 
     if (image) updatedFields.userImg = image;
 
-
     const updatedUser = await User.findOneAndUpdate(
       { _id: userId },
       updatedFields,
@@ -49,7 +48,7 @@ const updateUserDetails = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     res.json(updatedUser);
   } catch (error) {
     console.log(error.message);
@@ -93,8 +92,8 @@ const allWishlistByUser = async (req, res) => {
       "-__v"
     ); // Excluding _id and __v fields from products
 
-    const products = data.map((wishlist) => wishlist.products); // Extracting products from each wishlist
-
+    const products = data.map((wishlist) => wishlist.products);
+    //  console.log(products);
     res.status(200).json(products);
   } catch (error) {
     console.error("Error retrieving wishlist products:", error.message);

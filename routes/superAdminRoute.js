@@ -14,9 +14,11 @@ superAdmin_route.post(
   authMiddleware.verifyToken,
   superAdminContoller.createProductTips
 );
-
 superAdmin_route.get("/get-alltips", superAdminContoller.getAllTips);
+superAdmin_route.get("/get-publishedtips", superAdminContoller.publishedTips);
 superAdmin_route.put("/updateStatus/:id", superAdminContoller.changeStatus);
+superAdmin_route.get("/getall-product", superAdminContoller.getAllProducts);
+superAdmin_route.get("/get-All-opportunities",superAdminContoller.getAllOppertunities)
 
 // superAdmin_route.post("/createProduct", categoryContoller.createItem);
 
