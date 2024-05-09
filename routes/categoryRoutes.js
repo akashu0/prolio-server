@@ -5,6 +5,10 @@ const categoryContoller = require("../controllers/categoryControllers");
 
 category_routes.post("/createCategory", categoryContoller.create_Category);
 category_routes.get("/getAllCategory", categoryContoller.getAllCategory);
+category_routes.get(
+  "/get-active-category",
+  categoryContoller.getAactiveCategory
+);
 category_routes.get("/getAllCategory-types", categoryContoller.getCategoryType);
 category_routes.put(
   "/blockorunblock-category/:id",
@@ -19,12 +23,6 @@ category_routes.put(
   "/update-category/:id",
   categoryContoller.updateCategoryById
 );
-
-
-
-
-
-
 
 category_routes.get(
   "/getCategory-Names/:productTypes",

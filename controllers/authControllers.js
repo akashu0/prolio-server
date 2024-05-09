@@ -1,9 +1,9 @@
 const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const dotenv= require("dotenv")
+const dotenv = require("dotenv");
 
-dotenv.config()
+dotenv.config();
 // user register
 const register = async (req, res) => {
   try {
@@ -37,7 +37,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body
 
     const user = await User.findOne({ email });
 
@@ -65,7 +65,26 @@ const login = async (req, res) => {
 
     const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: "1d" });
 
-    res.status(200).json({ token, role: user.role, id: user._id ,userDetails});
+    let responseData = { token, role: user.role, id: user._id, userDetails };
+
+    if (user.role !== "user" && user.role !== "admin") {
+      if (user.departments && user.departments.length > 0) {
+        const departments = user.departments.map((dept) => ({
+          companyId: user.companyId,
+          departmentName: dept.departmentName,
+        }));
+
+        responseData = {
+          ...responseData,
+          departments, 
+        };
+      }
+    }
+
+
+    res
+      .status(200)
+      .json(responseData);
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Internal Server Error" });

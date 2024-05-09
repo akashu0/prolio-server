@@ -1,6 +1,7 @@
 const Tips = require("../model/productTipsModel");
 const Product = require("../model/productModel");
 const Oppertunities = require("../model/opportunityModel");
+const Banner = require("../model/banner");
 
 const createProductTips = async (req, res) => {
   try {
@@ -149,6 +150,105 @@ const getAllOppertunities = async (req, res) => {
   }
 };
 
+const uploadbanners = async (req, res) => {
+  try {
+    if (req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded." });
+    }
+
+    // Access descriptions and colors directly from req.body
+    // Ensure they are treated as arrays even if only one banner is uploaded
+    const descriptions = Array.isArray(req.body.descriptions)
+      ? req.body.descriptions
+      : [req.body.descriptions];
+    const colors = Array.isArray(req.body.colors)
+      ? req.body.colors
+      : [req.body.colors];
+
+    const images = req.files.map((file, index) => {
+      const description = descriptions[index];
+      const color = colors[index];
+
+      if (!description || !description.trim()) {
+        throw new Error("Description is required for each banner.");
+      }
+      if (!color || !/^#[0-9A-F]{6}$/i.test(color)) {
+        throw new Error("Invalid or missing color code.");
+      }
+
+      return {
+        filename: file.filename,
+        filepath: file.path,
+        mimetype: file.mimetype,
+        size: file.size,
+        description: description,
+        descriptionColor: color,
+      };
+    });
+
+    // Simulating database insertion
+    await Banner.insertMany(images);
+    res.json({
+      message:
+        "Images, descriptions, and colors successfully uploaded and saved!",
+    });
+  } catch (error) {
+    console.error("Error uploading Banner:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getAllBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({});
+    res.json(banners);
+  } catch (error) {
+    console.error("Error fetching banners:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getActiveBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({ status: "active" }).select(
+      "filename description descriptionColor -_id"
+    );
+
+    if (banners.length === 0) {
+      return res.status(404).json({ message: "No active banners found." });
+    }
+
+    res.status(200).json(banners);
+  } catch (error) {
+    console.error("Error fetching active banners:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const BlockOrUnblock = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const banner = await Banner.findById(id);
+    if (!banner) {
+      return res.status(404).json({ message: "Banner not found in database" });
+    }
+
+    banner.status = banner.status === "active" ? "inactive" : "active";
+    await banner.save();
+
+    const message =
+      banner.status === "active"
+        ? "The banner has been successfully set to active."
+        : "The banner has been successfully set to inactive.";
+
+    return res.status(200).json({ message });
+  } catch (error) {
+    console.error("Error toggling banner status:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createProductTips,
   getAllTips,
@@ -156,4 +256,8 @@ module.exports = {
   publishedTips,
   getAllProducts,
   getAllOppertunities,
+  uploadbanners,
+  getAllBanners,
+  getActiveBanners,
+  BlockOrUnblock,
 };

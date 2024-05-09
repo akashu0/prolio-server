@@ -4,13 +4,17 @@ const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true,
+    trim: true,
   },
   lastName: {
     type: String,
     required: true,
+    trim: true,
   },
   email: {
     type: String,
+    unique: true,
+    lowercase: true,
     required: true,
   },
   password: {
@@ -34,6 +38,13 @@ const userSchema = new mongoose.Schema({
   },
   contactNumber: {
     type: String,
+  },
+  departments: {
+    type: mongoose.Schema.Types.Mixed,
+  },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "companyDetials",
   },
 });
 

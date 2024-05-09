@@ -59,6 +59,22 @@ const getAllCategory = async (req, res) => {
   }
 };
 
+const getAactiveCategory = async (req, res) => {
+  try {
+    const activeCategories = await TypeCategory.aggregate([
+      { $match: { status: "Active" } },
+      { $project: { category: 1, subcategories: 1, _id: 0 } }
+    ]);
+
+    res.status(200).json(activeCategories);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: "error category" });
+  }
+};
+
+
+
 const getCategoryType = async (req, res) => {
   try {
     const uniqueTypes = await TypeCategory.aggregate([
@@ -265,4 +281,5 @@ module.exports = {
   blockOrUnblockCategory,
   updateCategoryById,
   getCategoryById,
+  getAactiveCategory
 };
