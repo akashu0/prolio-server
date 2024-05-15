@@ -42,10 +42,10 @@ const companyDetialsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  country: {
-    type: String,
-    required: true,
-  },
+  // country: {
+  //   type: String,
+  //   required: true,
+  // },
   state: {
     type: String,
     required: true,
@@ -54,19 +54,12 @@ const companyDetialsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  pincode: {
-    type: String,
-    required: true,
-  },
+
   is_verfied: {
     type: Boolean,
     default: false,
   },
-  documents: [
-    {
-      type: String,
-    },
-  ],
+  documents: [],
   userId: {
     type: String,
     required: true,

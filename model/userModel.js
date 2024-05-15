@@ -19,7 +19,10 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+  },
+  isGoogleLogin: {
+    type: Boolean,
+    default: false
   },
   role: {
     type: String,

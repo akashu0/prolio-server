@@ -3,7 +3,21 @@ const User = require("../model/userModel");
 
 const registerNewCompany = async (req, res) => {
   try {
-    const { formData, contactData, documentData, userId } = req.body;
+    const { formData, contactData } = req.body;
+    // console.log(data.companyName);
+    // console.log(contactData);
+    const Data = JSON.parse(formData);
+    const contactInfo = JSON.parse(contactData);
+    const { userId } = req.user;
+
+    const documents = req.files;
+    const saveFiles = [];
+
+    documents.forEach((file) => {
+      saveFiles.push({ filename: file.filename });
+    });
+
+    // console.log(saveFiles);
 
     const changeStatus = await User.findById(userId);
     if (!changeStatus) {
@@ -11,31 +25,25 @@ const registerNewCompany = async (req, res) => {
     }
 
     const newCompanyDetails = new CompanyModel({
-      companyName: formData.companyName,
-      OwnerName: formData.OwnerName,
-      registrationNumber: formData.registrationNumber,
-      yearOfRegister: formData.yearOfEstablishment,
-      businessType: formData.businessType,
-      totalEmployees: formData.totalEmployees,
-      companyEmail: contactData.companyEmail,
-      contactNumber: contactData.contactNumber,
-      address1: contactData.address1,
-      address2: contactData.address2,
-      country: contactData.country,
-      state: contactData.state,
-      city: contactData.city,
-      pincode: contactData.pincode,
-      documents: documentData.map((item) => item.base64),
+      companyName: Data.companyName,
+      OwnerName: Data.OwnerName,
+      registrationNumber: Data.registrationNumber,
+      yearOfRegister: Data.yearOfEstablishment,
+      businessType: Data.businessType,
+      totalEmployees: Data.totalEmployees,
+      companyEmail: contactInfo.companyEmail,
+      contactNumber: contactInfo.contactNumber,
+      address1: contactInfo.address1,
+      address2: contactInfo.address2,
+      state: contactInfo.state,
+      city: contactInfo.city,
+      documents: saveFiles,
       userId: userId,
     });
 
     await newCompanyDetails.save();
 
-    // await changeStatus.save();
-
-    return res
-      .status(201)
-      .json({ message: "Registered successfully", role: changeStatus.role });
+    return res.status(201).json({ message: "Registered successfully" });
   } catch (error) {
     console.error("Error saving company details:", error.message);
     return res.status(500).json({ error: "Internal Server Error" });

@@ -5,8 +5,8 @@ const create_Category = async (req, res) => {
   try {
     let { typeName, category, subcategories, questions } = req.body;
     typeName = typeName.toLowerCase();
-    typeName = typeName.toLowerCase().trim(); // Trim and convert to lowercase
-    category = category.trim(); // Trim category
+
+    category = category.toLowerCase().trim(); // Trim category
 
     // Trim each subcategory
     subcategories = subcategories.map((subcategory) => subcategory.trim());
@@ -63,7 +63,7 @@ const getAactiveCategory = async (req, res) => {
   try {
     const activeCategories = await TypeCategory.aggregate([
       { $match: { status: "Active" } },
-      { $project: { category: 1, subcategories: 1, _id: 0 } }
+      { $project: { category: 1, subcategories: 1, _id: 0 } },
     ]);
 
     res.status(200).json(activeCategories);
@@ -72,8 +72,6 @@ const getAactiveCategory = async (req, res) => {
     res.status(400).json({ error: "error category" });
   }
 };
-
-
 
 const getCategoryType = async (req, res) => {
   try {
@@ -281,5 +279,5 @@ module.exports = {
   blockOrUnblockCategory,
   updateCategoryById,
   getCategoryById,
-  getAactiveCategory
+  getAactiveCategory,
 };
