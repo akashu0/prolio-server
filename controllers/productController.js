@@ -1,27 +1,48 @@
 const Product = require("../model/productModel");
 const jwt = require("jsonwebtoken");
 const Company = require("../model/companyDetailsModel");
+const Item = require("../model/dynamicProductModel");
+const Wishlist = require("../model/wishlistModel");
 
 // const create_product = async (req, res) => {
 //   try {
 //     const { userId, role } = req.user;
 
+//     const {
+//       questions,
+//       type,
+//       category,
+//       subcategories,
+//       name,
+//       brandName,
+//       images,
+//     } = req.body;
+
 //     // Check if the user's company exists
 //     const checkExistedCompany = await Company.findOne({ userId: userId });
-//     if (checkExistedCompany) {
-//       const { sections1 } = req.body;
-//       // Create a new product associated with the user's company
-//       const newProduct = await Product.create({
-//         sections1: sections1,
-//         companyId: checkExistedCompany._id,
-//         userId: userId,
-//       });
-//       await newProduct.save();
-//       res.status(201).json(newProduct._id);
-//     } else {
-//       // If the user's company does not exist, return an error
+//     if (!checkExistedCompany) {
 //       return res.status(401).json({ message: "Company Not Registered" });
 //     }
+
+//     // if (!questions || !Array.isArray(req.files)) {
+//     //   return res.status(400).json({ message: "Invalid form data or files" });
+//     // }
+
+//     // Create a new product associated with the user's company
+//     const newProduct = await Item.create({
+//       type,
+//       category,
+//       subcategories,
+//       name,
+//       brand: brandName,
+//       images: images,
+//       questions,
+//       companyId: checkExistedCompany._id,
+//       userId,
+//     });
+
+//     await newProduct.save();
+//     res.status(201).json(newProduct);
 //   } catch (error) {
 //     console.error("Error saving product details:", error.message);
 //     res.status(500).json({ error: "Internal Server Error" });
@@ -247,9 +268,8 @@ const getProductById = async (req, res) => {
 const updateproductStatus = async (req, res) => {
   try {
     const productId = req.params.id;
-  
+
     const status = req.body.status;
-  
 
     const fetchData = await Product.findById({ _id: productId });
 
@@ -327,9 +347,33 @@ const getProductByUserId = async (req, res) => {
   }
 };
 
+const wishlistStatus = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const { userId } = req.user;
+
+    const wishlist = await Wishlist.findOne({ userId: userId });
+    if (!wishlist) {
+      return res.status(200).json({ status: "No product in wishlist" });
+    }
+
+    const products = wishlist.products.map(product => product.toString());
+    if (!products.includes(productId)) {
+      return res.status(200).json({ status: "No product in wishlist" });
+    }
+
+    // Product exists in the wishlist
+    return res.status(201).json({ status: "Product exists in wishlist" });
+  } catch (error) {
+    console.error("Error fetching product details:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 module.exports = {
   // create_product,
-
+  // create_product,
   getAllProducts,
   getAllProductByCompany,
   getProductById,
@@ -337,4 +381,5 @@ module.exports = {
   updateProduct,
   getProductByUserId,
   createProducts,
+  wishlistStatus
 };

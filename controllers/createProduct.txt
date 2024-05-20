@@ -1,0 +1,95 @@
+const create_product = async (req, res) => {
+  try {
+    console.log("entered");
+    const { userId, role } = req.user;
+
+    // Check if the user's company exists
+    const checkExistedCompany = await Company.findOne({ userId: userId });
+    if (!checkExistedCompany) {
+      return res.status(401).json({ message: "Company Not Registered" });
+    }
+
+    const {
+      type,
+      category,
+      subcategories,
+      questions,
+      name,
+      brandName,
+      images,
+    } = req.body.formData;
+
+    if (!questions || !Array.isArray(req.files)) {
+      return res.status(400).json({ message: "Invalid form data or files" });
+    }
+
+    const assignImagePaths = (questions, filesMap) => {
+      if (!questions || !questions.steps || !Array.isArray(questions.steps)) {
+        return;
+      }
+
+      questions.steps[0].forEach((step) => {
+        if (step.questions && Array.isArray(step.questions)) {
+          step[0].questions.forEach((question) => {
+            if (question.type === "file") {
+       
+              question.images = filesMap[question.description];
+            }
+
+            if (question.cards && Array.isArray(question.cards)) {
+              question.cards.forEach((card) => {
+                assignImagePaths({ steps: [{ questions: [card] }] }, filesMap);
+              });
+            }
+
+            if (
+              question.cardsDuplicate &&
+              Array.isArray(question.cardsDuplicate)
+            ) {
+              question.cardsDuplicate.forEach((cardDuplicate) => {
+                assignImagePaths(
+                  { steps: [{ questions: [cardDuplicate] }] },
+                  filesMap
+                );
+              });
+            }
+          });
+        }
+      });
+    };
+
+    const filesMap = {};
+    req.files.forEach((file) => {
+      const description = file.fieldname;
+      console.table(description);
+      if (!filesMap[description]) {
+        filesMap[description] = [];
+      }
+      filesMap[description].push(file.path);
+      console.log(filesMap[description]);
+    });
+
+    assignImagePaths(questions, filesMap);
+
+    console.log(questions.steps[0].questions, "question");
+
+    // Create a new product associated with the user's company
+    // const newProduct = await Item.create({
+    //   type: type,
+    //   category: category,
+    //   subcategories: subcategories,
+    //   name: name,
+    //   brand: brandName,
+    //   images: filesMap["images"],
+    //   questions: questions,
+    //   companyId: checkExistedCompany._id,
+    //   userId: userId,
+    // });
+
+    // await newProduct.save();
+    // res.status(201).json(newProduct._id);
+  } catch (error) {
+    console.error("Error saving product details:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

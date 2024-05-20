@@ -528,8 +528,8 @@ Prolio`,
 
 const deleteAccessUser = async (req, res) => {
   try {
-    const { id } = req.params; 
-    console.log(id,"iddddddd");
+    const { id } = req.params;
+    console.log(id, "iddddddd");
 
     // Perform the deletion operation
     const deletedUser = await User.findByIdAndDelete(id);
@@ -564,5 +564,5 @@ module.exports = {
   getAccessUserlist,
   getAccessUserById,
   updateAccessUserById,
-  deleteAccessUser
+  deleteAccessUser,
 };
