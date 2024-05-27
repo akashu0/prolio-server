@@ -1,6 +1,7 @@
 const User = require("../model/userModel");
 const Wishlist = require("../model/wishlistModel");
 const bcrypt = require("bcrypt");
+const Product = require("../model/productModel");
 
 const fetchUserDetails = async (req, res) => {
   try {
@@ -126,10 +127,68 @@ const removeFromWishlist = async (req, res) => {
   }
 };
 
+const search_products = async (req, res) => {
+  try {
+    const query = req.query.query;
+    if (!query) {
+      return res.status(400).send({ error: "Query parameter is required" });
+    }
+
+    // Construct the search query to match name, type, category, and subcategories
+    const searchRegex = new RegExp(query, "i");
+    const suggestions = await Product.find({
+      $or: [
+        { name: searchRegex },
+        { type: searchRegex },
+        { category: searchRegex },
+        { subcategories: searchRegex },
+      ],
+    }).limit(6);
+
+    const transformedData = suggestions.map((product) => {
+      // Find the "Product Details" step
+      const productDetailsStep = product.questions.steps.find(
+        (step) => step.name === "Product Details"
+      );
+
+      // Find specific questions
+      const productNameQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Name"
+      );
+      const brandNameQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Brand Name"
+      );
+      const productImageQuestion = productDetailsStep.questions.find(
+        (q) => q.description === "Product Image"
+      );
+
+      // Extract the images
+      let primaryImage = ""
+      if (productImageQuestion && productImageQuestion.images.length > 0) {
+        primaryImage =
+          productImageQuestion.images[0].base64 ||
+          productImageQuestion.images[0].url;
+      }
+      return {
+        id: product._id,
+        productName: productNameQuestion ? productNameQuestion.value : "",
+        brandName: brandNameQuestion ? brandNameQuestion.value : "",
+        productImage: primaryImage,
+      };
+    });
+
+    res.json(transformedData);
+  } catch (error) {
+    console.error("Error searching product: ", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   fetchUserDetails,
   addWishlist,
   allWishlistByUser,
   removeFromWishlist,
   updateUserDetails,
+  search_products,
 };

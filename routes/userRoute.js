@@ -29,6 +29,12 @@ user_route.get(
   userContoller.fetchUserDetails
 );
 
-user_route.put("/update-userDetails", authMiddleware.verifyToken, userContoller.updateUserDetails)
+user_route.get("/search", userContoller.search_products);
+
+user_route.put(
+  "/update-userDetails",
+  authMiddleware.verifyToken,
+  userContoller.updateUserDetails
+);
 
 module.exports = user_route;
